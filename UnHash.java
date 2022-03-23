@@ -6,12 +6,13 @@ class UnHash {
         while (!found) {
             try {
                 md5 = Hash.hash(i + "");
-                if (md5.equals(hash)) {
-                    found = true;
-                    return i + "";
-                }
             } catch (Exception e) {
                 e.printStackTrace();
+                return "Failed unhashing";
+            }
+            if (md5.equals(hash)) {
+                found = true;
+                return i + "";
             }
             i++;
         }

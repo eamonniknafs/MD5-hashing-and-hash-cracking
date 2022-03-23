@@ -1,0 +1,36 @@
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+
+public class Test {
+    public static void main(String[] args) {
+        try {
+            File myObj = new File("test.txt");
+            if (myObj.createNewFile()) {
+                System.out.println("File created: " + myObj.getName());
+            } else {
+                System.out.println("File already exists.");
+            }
+
+            FileWriter myWriter = new FileWriter("test.txt");
+            int i = 0;
+            while (i < new Integer(args[0])) {
+                String hash = "";
+                try {
+                    hash = Hash.hash(i + "");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                myWriter.write(hash + "\n");
+                i++;
+            }
+            myWriter.close();
+            System.out.println("Successfully wrote to the file.");
+            Dispatcher.main(new String[]{"test.txt"});
+        } catch (IOException e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+        }
+    }
+
+}

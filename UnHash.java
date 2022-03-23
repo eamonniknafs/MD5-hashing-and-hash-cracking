@@ -3,12 +3,11 @@ class UnHash {
         Boolean found = false;
         String md5 = null;
         int i = 0;
-        while (!found) {
+        while (!found && i < 1000000) {
             try {
                 md5 = Hash.hash(i + "");
             } catch (Exception e) {
-                e.printStackTrace();
-                return "Failed unhashing";
+                return "Failed generating hash";
             }
             if (md5.equals(hash)) {
                 found = true;
@@ -16,10 +15,10 @@ class UnHash {
             }
             i++;
         }
-        return "Failed unhashing";
+        return "Failed unhashing hash: " + hash;
     }
 
     public static void main(String args[]) throws Exception {
-        unhash(args[0]);
+        System.out.print(unhash(args[0]));
     }
 }

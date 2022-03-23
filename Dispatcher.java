@@ -12,7 +12,7 @@ public class Dispatcher {
                 System.out.println(UnHash.unhash(line));
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Failed reading file");
         }
     }
 }

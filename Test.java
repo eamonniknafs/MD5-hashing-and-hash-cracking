@@ -13,20 +13,23 @@ public class Test {
             }
 
             FileWriter myWriter = new FileWriter("test.txt");
+            int idx = new Integer(args[1]);
+            int offset = new Integer(args[2]);
             int i = 0;
             while (i < new Integer(args[0])) {
                 String hash = "";
                 try {
-                    hash = Hash.hash(i + "");
+                    hash = Hash.hash(idx + "");
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
                 myWriter.write(hash + "\n");
                 i++;
+                idx += offset;
             }
             myWriter.close();
             System.out.println("Successfully wrote to the file.");
-            Dispatcher.main(new String[]{"test.txt"});
+            Dispatcher.main(new String[] { "test.txt" });
         } catch (IOException e) {
             System.out.println("An error occurred.");
             e.printStackTrace();

@@ -1,4 +1,15 @@
-class UnHash {
+class UnHash extends Thread {
+    String hash;
+
+    public UnHash(String hash) {
+        this.hash = hash;
+    }
+
+    @Override
+    public void run() {
+        System.out.println(unhash(hash));
+    }
+
     public static String unhash(String hash) {
         Boolean found = false;
         String md5 = null;

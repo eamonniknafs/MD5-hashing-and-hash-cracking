@@ -28,7 +28,8 @@ public class Dispatcher {
         try {
             List<String> hashes = Files.readAllLines(Paths.get(args[0]));
             int N = Integer.parseInt(args[1]);
-            long timeout = Long.parseLong(args[2]);
+            long timeout = 0;
+            if (args.length>2) timeout = Long.parseLong(args[2]);
             Dispatcher dispatcher = new Dispatcher();
             dispatcher.fillQueue(hashes);
             dispatcher.dispatch(N, timeout);

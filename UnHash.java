@@ -1,5 +1,8 @@
+import java.util.concurrent.TimeUnit;
+
 class UnHash extends Thread {
     String hash;
+    TimeUnit time = TimeUnit.MILLISECONDS;
 
     public UnHash(String hash) {
         this.hash = hash;
@@ -27,6 +30,10 @@ class UnHash extends Thread {
             i++;
         }
         return "Failed unhashing hash: " + hash;
+    }
+
+    public TimeUnit getTime() {
+        return time;
     }
 
     public static void main(String args[]) throws Exception {

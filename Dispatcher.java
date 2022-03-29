@@ -17,7 +17,7 @@ public class Dispatcher {
         }
     }
     public void dispatch(int threads, long timeout) {
-        executor = new ThreadPoolExecutor(threads, threads, timeout,
+        executor = new ThreadPoolExecutor(threads, threads, 0L,
                 java.util.concurrent.TimeUnit.MILLISECONDS, WorkerQueue);
         while (!WorkQueue.isEmpty()) {
             executor.execute(new UnHash(WorkQueue.poll()));

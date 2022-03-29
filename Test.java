@@ -1,6 +1,7 @@
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.Runtime;
 
 public class Test {
     public static void main(String[] args) {
@@ -29,7 +30,7 @@ public class Test {
             }
             myWriter.close();
             System.out.println("Successfully wrote to the file.");
-            Dispatcher.main(new String[] { "test.txt" });
+            Dispatcher.main(new String[] { "test.txt",  Integer.toString(Runtime.getRuntime().availableProcessors()) });
         } catch (IOException e) {
             System.out.println("An error occurred.");
             e.printStackTrace();

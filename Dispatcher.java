@@ -16,8 +16,8 @@ public class Dispatcher {
             WorkQueue.add((String) hash);
         }
     }
-    public void dispatch(int threads) {
-        executor = new ThreadPoolExecutor(threads, threads, 0L,
+    public void dispatch(int threads, long timeout) {
+        executor = new ThreadPoolExecutor(threads, threads, timeout,
                 java.util.concurrent.TimeUnit.MILLISECONDS, WorkerQueue);
         while (!WorkQueue.isEmpty()) {
             executor.execute(new UnHash(WorkQueue.poll()));
@@ -28,12 +28,10 @@ public class Dispatcher {
         try {
             List<String> hashes = Files.readAllLines(Paths.get(args[0]));
             int N = Integer.parseInt(args[1]);
+            long timeout = Long.parseLong(args[2]);
             Dispatcher dispatcher = new Dispatcher();
             dispatcher.fillQueue(hashes);
-            dispatcher.dispatch(N);
-            // for (String line : lines) {
-            //     System.out.println(UnHash.unhash(line));
-            // }
+            dispatcher.dispatch(N, timeout);
         } catch (IOException e) {
             System.out.println("Failed reading file");
         }

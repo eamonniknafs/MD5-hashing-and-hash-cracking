@@ -14,11 +14,11 @@ class UnHash extends Thread {
         Boolean found = false;
         String md5 = null;
         int i = 0;
-        while (!found && i < 1000000) {
+        while (!found) {
             try {
                 md5 = Hash.hash(i + "");
             } catch (Exception e) {
-                return "Failed generating hash";
+                return "Failed generating hash" + hash;
             }
             if (md5.equals(hash)) {
                 found = true;

@@ -26,6 +26,9 @@ public class Dispatcher {
             executor.submit(new UnHash(WorkQueue.poll(), timeout));
         }
         executor.shutdown();
+        try{executor.awaitTermination(5000, timeUnit);}
+        catch(InterruptedException e){}
+        
     }
 
     public static void main(String[] args) {

@@ -13,7 +13,7 @@ public class Hash {
     }
 
     public static void main(String args[]) throws Exception {
-        String str = "13244";
+        String str = "5000000";
         System.out.println("MD5 hash of " + str + ": " + hash(str));
     }
 }

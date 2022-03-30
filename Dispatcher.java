@@ -3,8 +3,8 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.nio.file.Paths;
 import java.nio.file.Files;
 import java.io.IOException;
@@ -12,6 +12,7 @@ public class Dispatcher {
     Queue<String> WorkQueue = new LinkedList<String>();
     BlockingQueue<Runnable> WorkerQueue = new ArrayBlockingQueue<Runnable>(100);
     ThreadPoolExecutor executor;
+    TimeUnit timeUnit = TimeUnit.MILLISECONDS;
 
     public void fillQueue(List<String> hashes) {
         for (Object hash : hashes) {
@@ -20,15 +21,9 @@ public class Dispatcher {
     }
 
     public void dispatch(int threads, long timeout) {
-        executor = new TPE(threads, threads, 0L,
-                java.util.concurrent.TimeUnit.MILLISECONDS, WorkerQueue, timeout);
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(threads, threads, 0L, timeUnit, WorkerQueue);
         while (!WorkQueue.isEmpty()) {
-            Future<?> task;
-            task = executor.submit(new UnHash(WorkQueue.poll()));
-            try {
-                task.get();
-            } catch (Exception e) {
-            }
+            executor.submit(new UnHash(WorkQueue.poll(), timeout));
         }
         executor.shutdown();
     }

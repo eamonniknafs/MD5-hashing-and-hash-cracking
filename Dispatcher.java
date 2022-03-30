@@ -3,6 +3,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.nio.file.Paths;
 import java.nio.file.Files;
@@ -17,10 +18,16 @@ public class Dispatcher {
         }
     }
     public void dispatch(int threads, long timeout) {
-        executor = new ThreadPoolExecutor(threads, threads, timeout,
-                java.util.concurrent.TimeUnit.MILLISECONDS, WorkerQueue);
+        executor = new TPE(threads, threads, 0L,
+                java.util.concurrent.TimeUnit.MILLISECONDS, WorkerQueue, timeout);
         while (!WorkQueue.isEmpty()) {
-            executor.execute(new UnHash(WorkQueue.poll()));
+            Future<?> task;
+            task = executor.submit(new UnHash(WorkQueue.poll()));
+            try{
+                task.get();
+            }
+            catch(Exception e){
+            }
         }
         executor.shutdown();
     }

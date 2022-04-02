@@ -1,6 +1,5 @@
 class UnHash extends Thread {
     String hash;
-    long startTime;
     long timeout;
     long endTime;
 
@@ -16,9 +15,8 @@ class UnHash extends Thread {
             System.out.println(unhash(hash));
         }
         else {
-            this.startTime = System.currentTimeMillis();
-            this.endTime = timeout + this.startTime;
-            System.out.println(unhash(hash, endTime, startTime));
+            this.endTime = timeout + System.currentTimeMillis();
+            System.out.println(unhash(hash, endTime));
         }
     }
 
@@ -41,11 +39,11 @@ class UnHash extends Thread {
         return ""+hash;
     }
 
-    public static String unhash(String hash, long endTime, long startTime) {
+    public static String unhash(String hash, long endTime) {
         Boolean found = false;
         String md5 = null;
         int i = 0;
-        while (!found && !interrupted() && (endTime > System.currentTimeMillis())) {
+        while (!found && !interrupted() && endTime > System.currentTimeMillis()) {
             try {
                 md5 = Hash.hash(i + "");
             } catch (Exception e) {
@@ -53,7 +51,7 @@ class UnHash extends Thread {
             }
             if (md5.equals(hash)) {
                 found = true;
-                return i + "" + " in: " + (System.currentTimeMillis() - startTime) + "ms";
+                return i + "";
             }
             i++;
         }

@@ -53,7 +53,7 @@ class UnHash extends Thread {
             }
             if (md5.equals(hash)) {
                 found = true;
-                return i + "" + " in: " + (System.currentTimeMillis() - startTime) + "ms";
+                return i + "";
             }
             i++;
         }

@@ -11,7 +11,6 @@ import java.io.IOException;
 public class Dispatcher {
     Queue<String> WorkQueue = new LinkedList<String>();
     BlockingQueue<Runnable> WorkerQueue = new ArrayBlockingQueue<Runnable>(100);
-    ThreadPoolExecutor executor;
     TimeUnit timeUnit = TimeUnit.MILLISECONDS;
 
     public void fillQueue(List<String> hashes) {
@@ -26,9 +25,6 @@ public class Dispatcher {
             executor.submit(new UnHash(WorkQueue.poll(), timeout));
         }
         executor.shutdown();
-        try{executor.awaitTermination(5000, timeUnit);}
-        catch(InterruptedException e){}
-        
     }
 
     public static void main(String[] args) {

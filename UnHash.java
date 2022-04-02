@@ -1,23 +1,24 @@
 class UnHash extends Thread {
     String hash;
-    long endTime = -1;
+    long startTime;
+    long timeout;
+    long endTime;
 
     public UnHash(String hash, long timeout) {
         super();
         this.hash = hash;
-        if (timeout != -1)
-            this.endTime = timeout + System.currentTimeMillis();
+        this.timeout = timeout;
     }
 
     @Override
     public void run() {
-        if (endTime == -1) {
+        if (timeout == -1) {
             System.out.println(unhash(hash));
         }
         else {
-
-                System.out.println(unhash(hash, endTime));
-
+            this.startTime = System.currentTimeMillis();
+            this.endTime = timeout + this.startTime;
+            System.out.println(unhash(hash, endTime, startTime));
         }
     }
 
@@ -40,7 +41,7 @@ class UnHash extends Thread {
         return ""+hash;
     }
 
-    public static String unhash(String hash, long endTime) {
+    public static String unhash(String hash, long endTime, long startTime) {
         Boolean found = false;
         String md5 = null;
         int i = 0;
@@ -52,7 +53,7 @@ class UnHash extends Thread {
             }
             if (md5.equals(hash)) {
                 found = true;
-                return i + "";
+                return i + "" + " in: " + (System.currentTimeMillis() - startTime) + "ms";
             }
             i++;
         }

@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -14,10 +15,9 @@ public class Dispatcher {
     TimeUnit timeUnit = TimeUnit.MILLISECONDS;
     ThreadPoolExecutor executor;
 
-    public Dispatcher(int threads, long timeout, List<String> hashes) {
+    public Dispatcher(List<String> hashes) {
         WorkerQueue = new ArrayBlockingQueue<Runnable>(hashes.size());
         fillQueue(hashes);
-        dispatch(threads, timeout);
     }
 
     public void fillQueue(List<String> hashes) {
@@ -26,12 +26,30 @@ public class Dispatcher {
         }
     }
 
-    public void dispatch(int threads, long timeout) {
+    public ArrayList<ArrayList<String>> dispatch(int threads, long timeout, Boolean outputList) {
+        ArrayList<ArrayList<String>> output = new ArrayList<ArrayList<String>>(2);
+        output.add(new ArrayList<String>());
+        output.add(new ArrayList<String>());
         executor = new ThreadPoolExecutor(threads, threads, 0L, timeUnit, WorkerQueue);
-        while (!WorkQueue.isEmpty()) {
-            executor.submit(new UnHash(WorkQueue.poll(), timeout));
+        if (outputList) {
+            while (!WorkQueue.isEmpty()) {
+                executor.submit(new UnHash(WorkQueue.poll(), timeout, output));
+            }
+            executor.shutdown();
+            try {
+                if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
+                    return output;
+                }
+            } catch (InterruptedException ex) {
+                return output;
+            }
+        } else {
+            while (!WorkQueue.isEmpty()) {
+                executor.submit(new UnHash(WorkQueue.poll(), timeout));
+            }
+            executor.shutdown();
         }
-        executor.shutdown();
+        return output;
     }
 
     public static void main(String[] args) {
@@ -41,7 +59,8 @@ public class Dispatcher {
             long timeout = -1;
             if (args.length > 2)
                 timeout = Long.parseLong(args[2]);
-            new Dispatcher(N, timeout, hashes);
+            Dispatcher dispatcher = new Dispatcher(hashes);
+            dispatcher.dispatch(N, timeout, false);
         } catch (IOException e) {
             System.out.println("Failed reading file");
         }

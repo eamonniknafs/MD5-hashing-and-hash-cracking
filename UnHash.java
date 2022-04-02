@@ -1,7 +1,10 @@
+import java.util.ArrayList;
+
 class UnHash extends Thread {
     String hash;
     long timeout;
     long endTime;
+    ArrayList<ArrayList<String>> output;
 
     public UnHash(String hash, long timeout) {
         super();
@@ -9,14 +12,29 @@ class UnHash extends Thread {
         this.timeout = timeout;
     }
 
+    public UnHash(String hash, long timeout, ArrayList<ArrayList<String>> output) {
+        super();
+        this.hash = hash;
+        this.timeout = timeout;
+        this.output = output;
+    }
+
     @Override
     public void run() {
         if (timeout == -1) {
             System.out.println(unhash(hash));
-        }
-        else {
+        } else {
             this.endTime = timeout + System.currentTimeMillis();
-            System.out.println(unhash(hash, endTime));
+            if (output == null) {
+                System.out.println(unhash(hash, endTime));
+            } else {
+                String out = unhash(hash, endTime);
+                if (out.length() == 32) {
+                    output.get(0).add(out);
+                } else {
+                    output.get(1).add(out);
+                }
+            }
         }
     }
 
@@ -36,7 +54,7 @@ class UnHash extends Thread {
             }
             i++;
         }
-        return ""+hash;
+        return "" + hash;
     }
 
     public static String unhash(String hash, long endTime) {

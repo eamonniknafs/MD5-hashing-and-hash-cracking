@@ -42,7 +42,6 @@ public class Pirate {
         for (String hint : hintList) {
             System.out.println(hint);
         }
-        System.out.print(WorkQueue);
     }
 
     public void findTreasure(int threads, long timeout) {

@@ -8,10 +8,13 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class Pirate {
+    Queue<Future<String>> WorkerFutures = new LinkedList<Future<String>>();;
     Queue<String> WorkQueue = new LinkedList<String>();
     LinkedList<String> hintList = new LinkedList<String>();
     BlockingQueue<Runnable> WorkerQueue;
@@ -47,7 +50,14 @@ public class Pirate {
     public void findTreasure(int threads, long timeout) {
         executor = new ThreadPoolExecutor(threads, threads, 0L, timeUnit, WorkerQueue);
         while (!WorkQueue.isEmpty()) {
-            executor.submit(new HintUnHash(WorkQueue.poll(), hintList, timeout));
+            WorkerFutures.add(executor.submit(new HintUnHash(WorkQueue.poll(), hintList, timeout)));
+        }
+        for (Future<String> future : WorkerFutures) {
+            try {
+                System.out.println(future.get());
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
         }
         executor.shutdown();
     }

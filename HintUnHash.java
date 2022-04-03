@@ -1,6 +1,7 @@
 import java.util.LinkedList;
+import java.util.concurrent.Callable;
 
-class HintUnHash extends Thread {
+class HintUnHash implements Callable<String> {
     String hash;
     long timeout;
     long endTime;
@@ -14,16 +15,16 @@ class HintUnHash extends Thread {
     }
 
     @Override
-    public void run() {
+    public String call() {
         this.endTime = timeout + System.currentTimeMillis();
-        System.out.println(unhash(hash, endTime, hints));
+        return unhash(hash, endTime, hints);
     }
 
     public static String unhash(String hash, long endTime, LinkedList<String> hints) {
         Boolean found = false;
         String md5 = null;
         int i = 0;
-        while (!found && !interrupted() && endTime > System.currentTimeMillis()) {
+        while (!found && endTime > System.currentTimeMillis() && i < hints.size()) {
             String h1 = hints.get(i);
             for (int j = i + 1; j < hints.size(); j++) {
                 String h2 = hints.get(j);

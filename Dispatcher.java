@@ -4,13 +4,17 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.nio.file.Paths;
 import java.nio.file.Files;
 import java.io.IOException;
+
 public class Dispatcher {
     Queue<String> WorkQueue = new LinkedList<String>();
+    Queue<Future<String>> WorkerFutures = new LinkedList<Future<String>>();;
     BlockingQueue<Runnable> WorkerQueue;
     TimeUnit timeUnit = TimeUnit.MILLISECONDS;
     ThreadPoolExecutor executor;
@@ -27,29 +31,35 @@ public class Dispatcher {
     }
 
     public ArrayList<ArrayList<String>> dispatch(int threads, long timeout, Boolean outputList) {
-        ArrayList<ArrayList<String>> output = new ArrayList<ArrayList<String>>(2);
-        output.add(new ArrayList<String>());
-        output.add(new ArrayList<String>());
         executor = new ThreadPoolExecutor(threads, threads, 0L, timeUnit, WorkerQueue);
         if (outputList) {
+            ArrayList<ArrayList<String>> output = new ArrayList<ArrayList<String>>(2);
+            output.add(new ArrayList<String>());
+            output.add(new ArrayList<String>());
             while (!WorkQueue.isEmpty()) {
-                executor.submit(new UnHash(WorkQueue.poll(), timeout, output));
+                WorkerFutures.add(executor.submit(new UnHash(WorkQueue.poll(), timeout, false)));
+            }
+            for (Future<String> future : WorkerFutures) {
+                try {
+                    String out = future.get();
+                    if (out.length() == 32) {
+                        output.get(0).add(out);
+                    } else {
+                        output.get(1).add(out);
+                    }
+                } catch (InterruptedException | ExecutionException e) {
+                    e.printStackTrace();
+                }
             }
             executor.shutdown();
-            try {
-                if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
-                    return output;
-                }
-            } catch (InterruptedException ex) {
-                return output;
-            }
+            return output;
         } else {
             while (!WorkQueue.isEmpty()) {
-                executor.submit(new UnHash(WorkQueue.poll(), timeout));
+                executor.submit(new UnHash(WorkQueue.poll(), timeout, true));
             }
             executor.shutdown();
         }
-        return output;
+        return new ArrayList<ArrayList<String>>();
     }
 
     public static void main(String[] args) {

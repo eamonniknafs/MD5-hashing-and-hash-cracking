@@ -1,40 +1,31 @@
-import java.util.ArrayList;
+import java.util.concurrent.Callable;
 
-class UnHash extends Thread {
+class UnHash implements Callable<String> {
     String hash;
     long timeout;
     long endTime;
-    ArrayList<ArrayList<String>> output;
+    Boolean print = true;
 
-    public UnHash(String hash, long timeout) {
+    public UnHash(String hash, long timeout, Boolean print) {
         super();
         this.hash = hash;
         this.timeout = timeout;
-    }
-
-    public UnHash(String hash, long timeout, ArrayList<ArrayList<String>> output) {
-        super();
-        this.hash = hash;
-        this.timeout = timeout;
-        this.output = output;
+        this.print = print;
     }
 
     @Override
-    public void run() {
+    public String call() {
         if (timeout == -1) {
-            System.out.println(unhash(hash));
+            String out = unhash(hash);
+            System.out.println(out);
+            return out;
         } else {
             this.endTime = timeout + System.currentTimeMillis();
-            if (output == null) {
+            String out = unhash(hash, endTime);
+            if (print == true) {
                 System.out.println(unhash(hash, endTime));
-            } else {
-                String out = unhash(hash, endTime);
-                if (out.length() == 32) {
-                    output.get(0).add(out);
-                } else {
-                    output.get(1).add(out);
-                }
             }
+            return out;
         }
     }
 
@@ -42,7 +33,7 @@ class UnHash extends Thread {
         Boolean found = false;
         String md5 = null;
         int i = 0;
-        while (!found && !interrupted()) {
+        while (!found) {
             try {
                 md5 = Hash.hash(i + "");
             } catch (Exception e) {
@@ -61,7 +52,7 @@ class UnHash extends Thread {
         Boolean found = false;
         String md5 = null;
         int i = 0;
-        while (!found && !interrupted() && endTime > System.currentTimeMillis()) {
+        while (!found && endTime > System.currentTimeMillis()) {
             try {
                 md5 = Hash.hash(i + "");
             } catch (Exception e) {

@@ -25,7 +25,7 @@ class HintUnHash extends Thread {
         int i = 0;
         while (!found && !interrupted() && endTime > System.currentTimeMillis()) {
             String h1 = hints.get(i);
-            for (int j = i; j < hints.size(); j++) {
+            for (int j = i + 1; j < hints.size(); j++) {
                 String h2 = hints.get(j);
                 for (int mid = new Integer(h1); mid < new Integer(h2); mid++) {
                     try {

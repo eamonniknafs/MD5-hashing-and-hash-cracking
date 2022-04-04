@@ -23,11 +23,16 @@ class HintUnHash implements Callable<String> {
     public static String unhash(String hash, long endTime, LinkedList<String> hints) {
         Boolean found = false;
         String md5 = null;
-        int i = 0;
-        while (!found && endTime > System.currentTimeMillis() && i < hints.size()) {
-            String h1 = hints.get(i);
-            for (int j = i + 1; j < hints.size(); j++) {
-                String h2 = hints.get(j);
+        int offset = 1;
+        while (!found && endTime > System.currentTimeMillis() && offset < hints.size() - 1) {
+            int i = 0;
+            while (!found && endTime > System.currentTimeMillis() && i < hints.size() - offset) {
+                if (hints.get(i) == null || hints.get(i + offset) == null) {
+                    i++;
+                    continue;
+                }
+                String h1 = hints.get(i);
+                String h2 = hints.get(i + offset);
                 for (int mid = new Integer(h1); mid < new Integer(h2); mid++) {
                     try {
                         md5 = Hash.hash(h1 + ";" + mid + ";" + h2);
@@ -36,11 +41,14 @@ class HintUnHash implements Callable<String> {
                     }
                     if (md5.equals(hash)) {
                         found = true;
+                        hints.set(i, null);
+                        hints.set(i + offset, null);
                         return h1 + ";" + mid + ";" + h2;
                     }
                 }
+                i++;
             }
-            i++;
+            offset++;
         }
         return "" + hash;
     }

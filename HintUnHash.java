@@ -24,7 +24,7 @@ class HintUnHash implements Callable<String> {
         Boolean found = false;
         String md5 = null;
         int offset = 1;
-        while (!found && endTime > System.currentTimeMillis() && offset < hints.size() - 1) {
+        while (!found && endTime > System.currentTimeMillis() && offset < hints.size()) {
             int i = 0;
             while (!found && endTime > System.currentTimeMillis() && i < hints.size() - offset) {
                 if (hints.get(i) == null || hints.get(i + offset) == null) {

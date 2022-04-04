@@ -1,22 +1,31 @@
-class UnHash extends Thread {
+import java.util.concurrent.Callable;
+
+class UnHash implements Callable<String> {
     String hash;
     long timeout;
     long endTime;
+    Boolean print = true;
 
-    public UnHash(String hash, long timeout) {
+    public UnHash(String hash, long timeout, Boolean print) {
         super();
         this.hash = hash;
         this.timeout = timeout;
+        this.print = print;
     }
 
     @Override
-    public void run() {
+    public String call() {
         if (timeout == -1) {
-            System.out.println(unhash(hash));
-        }
-        else {
+            String out = unhash(hash);
+            System.out.println(out);
+            return out;
+        } else {
             this.endTime = timeout + System.currentTimeMillis();
-            System.out.println(unhash(hash, endTime));
+            String out = unhash(hash, endTime);
+            if (print == true) {
+                System.out.println(unhash(hash, endTime));
+            }
+            return out;
         }
     }
 
@@ -24,7 +33,7 @@ class UnHash extends Thread {
         Boolean found = false;
         String md5 = null;
         int i = 0;
-        while (!found && !interrupted()) {
+        while (!found) {
             try {
                 md5 = Hash.hash(i + "");
             } catch (Exception e) {
@@ -36,14 +45,14 @@ class UnHash extends Thread {
             }
             i++;
         }
-        return ""+hash;
+        return "" + hash;
     }
 
     public static String unhash(String hash, long endTime) {
         Boolean found = false;
         String md5 = null;
         int i = 0;
-        while (!found && !interrupted() && endTime > System.currentTimeMillis()) {
+        while (!found && endTime > System.currentTimeMillis()) {
             try {
                 md5 = Hash.hash(i + "");
             } catch (Exception e) {

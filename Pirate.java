@@ -50,16 +50,21 @@ public class Pirate {
     public void findTreasure(int threads, long timeout) {
         executor = new ThreadPoolExecutor(threads, threads, 0L, timeUnit, WorkerQueue);
         while (!WorkQueue.isEmpty()) {
-            WorkerFutures.add(executor.submit(new HintUnHash(WorkQueue.poll(), hintList, timeout)));
-        }
-        for (Future<String> future : WorkerFutures) {
-            try {
-                System.out.println(future.get());
-            } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
-            }
+            WorkerFutures.add(executor.submit(new HintUnHash(WorkQueue.poll(), hintList, timeout * 14)));
         }
         executor.shutdown();
+        try {
+            executor.awaitTermination(Long.MAX_VALUE, timeUnit);
+            for (Future<String> future : WorkerFutures) {
+                try {
+                    System.out.println(future.get());
+                } catch (InterruptedException | ExecutionException e) {
+                    e.printStackTrace();
+                }
+            }
+        } catch (InterruptedException e) {
+            System.out.println("\n\nInterrupted\n\n");
+        }
     }
 
     public static void main(String[] args) {

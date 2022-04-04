@@ -39,19 +39,24 @@ public class Dispatcher {
             while (!WorkQueue.isEmpty()) {
                 WorkerFutures.add(executor.submit(new UnHash(WorkQueue.poll(), timeout, false)));
             }
-            for (Future<String> future : WorkerFutures) {
-                try {
-                    String out = future.get();
-                    if (out.length() == 32) {
-                        output.get(0).add(out);
-                    } else {
-                        output.get(1).add(out);
-                    }
-                } catch (InterruptedException | ExecutionException e) {
-                    e.printStackTrace();
-                }
-            }
             executor.shutdown();
+            try {
+                executor.awaitTermination(Long.MAX_VALUE, timeUnit);
+                for (Future<String> future : WorkerFutures) {
+                    try {
+                        String out = future.get();
+                        if (out.length() == 32) {
+                            output.get(0).add(out);
+                        } else {
+                            output.get(1).add(out);
+                        }
+                    } catch (InterruptedException | ExecutionException e) {
+                        e.printStackTrace();
+                    }
+                }
+            } catch (InterruptedException e) {
+                System.out.println("\n\nInterrupted\n\n");
+            }
             return output;
         } else {
             while (!WorkQueue.isEmpty()) {

@@ -3,9 +3,11 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutionException;
@@ -14,9 +16,9 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class Pirate {
-    Queue<Future<String>> WorkerFutures = new LinkedList<Future<String>>();;
     Queue<String> WorkQueue = new LinkedList<String>();
     LinkedList<String> hintList = new LinkedList<String>();
+    Queue<Future<String>> WorkerFutures;
     BlockingQueue<Runnable> WorkerQueue;
     TimeUnit timeUnit = TimeUnit.MILLISECONDS;
     ThreadPoolExecutor executor;
@@ -47,21 +49,39 @@ public class Pirate {
         }
     }
 
-    public void findTreasure(int threads, long timeout) {
+    public void findTreasure(int threads, long timeout, boolean firstRun) {
+        WorkerFutures = new LinkedList<Future<String>>();
         executor = new ThreadPoolExecutor(threads, threads, 0L, timeUnit, WorkerQueue);
         while (!WorkQueue.isEmpty()) {
-            WorkerFutures.add(executor.submit(new HintUnHash(WorkQueue.poll(), hintList, timeout * 13)));
+            if (firstRun) {
+                WorkerFutures.add(executor.submit(new HintUnHash(WorkQueue.poll(), hintList, timeout * 13)));
+            } else {
+                WorkerFutures.add(executor.submit(new CrackCypher(WorkQueue.poll(), hintList, timeout)));
+            }
         }
         executor.shutdown();
         try {
             executor.awaitTermination(Long.MAX_VALUE, timeUnit);
             for (Future<String> future : WorkerFutures) {
                 try {
-                    System.out.println(future.get());
+                    String out = future.get();
+                    if (out.length() == 32){
+                        WorkQueue.add(out);
+                    } else {
+                        String[] split = out.split(";");
+                        for (String value : split) {
+                            hintList.add(value);
+                        }
+                    }
                 } catch (InterruptedException | ExecutionException e) {
                     e.printStackTrace();
                 }
             }
+            Set<String> set = new HashSet<>(hintList);
+            hintList.clear();
+            hintList.addAll(set);
+            hintList.sort(new StringIntComparator());
+            findTreasure(threads, timeout, false);
         } catch (InterruptedException e) {
             System.out.println("\n\nInterrupted\n\n");
         }
@@ -75,7 +95,7 @@ public class Pirate {
             if (args.length > 2)
                 timeout = Long.parseLong(args[2]);
             Pirate pirate = new Pirate(N, timeout, hashes);
-            pirate.findTreasure(N, timeout);
+            pirate.findTreasure(N, timeout, true);
         } catch (IOException e) {
             System.out.println("Failed reading file");
         }

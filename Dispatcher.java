@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -18,6 +19,7 @@ public class Dispatcher {
     BlockingQueue<Runnable> WorkerQueue;
     TimeUnit timeUnit = TimeUnit.MILLISECONDS;
     ThreadPoolExecutor executor;
+    HashMap<Integer, String> hashes = new HashMap<Integer, String>();
 
     public Dispatcher(List<String> hashes) {
         WorkerQueue = new ArrayBlockingQueue<Runnable>(hashes.size());
@@ -37,7 +39,7 @@ public class Dispatcher {
             output.add(new ArrayList<String>());
             output.add(new ArrayList<String>());
             while (!WorkQueue.isEmpty()) {
-                WorkerFutures.add(executor.submit(new UnHash(WorkQueue.poll(), timeout, false)));
+                WorkerFutures.add(executor.submit(new UnHash(WorkQueue.poll(), timeout, false, hashes)));
             }
             executor.shutdown();
             try {

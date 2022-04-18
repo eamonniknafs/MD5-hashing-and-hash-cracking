@@ -23,14 +23,14 @@ public class Pirate {
     BlockingQueue<Runnable> WorkerQueue;
     TimeUnit timeUnit = TimeUnit.MILLISECONDS;
     ThreadPoolExecutor executor;
-    String cypher;
+    List<String> cypher;
 
-    public Pirate(int threads, long timeout, List<String> hashes, String cypher) {
+    public Pirate(int threads, long timeout, List<String> hashes, List<String> cypher) {
         Dispatcher dispatcher = new Dispatcher(hashes);
         ArrayList<ArrayList<String>> treasureChest = dispatcher.dispatch(threads, timeout, true);
+        this.cypher = cypher;
         fillData(treasureChest);
         WorkerQueue = new ArrayBlockingQueue<Runnable>(WorkQueue.size());
-        this.cypher = cypher;
     }
 
     static class StringIntComparator implements Comparator<String> {
@@ -47,15 +47,22 @@ public class Pirate {
             hintList.add((String) hint);
         }
         hintList.sort(new StringIntComparator());
-        for (String hint : hintList) {
-            System.out.println(hint);
+        if (cypher == null) {
+            for (String hint : hintList) {
+                System.out.println(hint);
+            }
         }
     }
 
-    public static String crackCypher(String cypher, LinkedList<String> hints) {
+    public static String crackCypher(List<String> cypher, LinkedList<String> hints) {
         String crackedCypher = "";
-        for (String hint : hints) {
-            crackedCypher = crackedCypher + cypher.charAt(Integer.parseInt(hint));
+        for (String cyph : cypher) {
+            for (String hint : hints) {
+                crackedCypher = crackedCypher + cyph.charAt(Integer.parseInt(hint));
+            }
+            if (cypher.size() > 1) {
+                crackedCypher = crackedCypher + "\n";
+            }
         }
         return "" + crackedCypher;
     }
@@ -72,7 +79,9 @@ public class Pirate {
             for (Future<String> future : WorkerFutures) {
                 try {
                     String out = future.get();
-                    System.out.println(out);
+                    if (cypher == null) {
+                        System.out.println(out);
+                    }
                     if (cypher != null) {
                         if (out.length() == 32) {
                             WorkQueue.add(out);
@@ -109,11 +118,11 @@ public class Pirate {
             List<String> hashes = Files.readAllLines(Paths.get(args[0]));
             int N = Integer.parseInt(args[1]);
             long timeout = -1;
-            String cypherIn = null;
+            List<String> cypherIn = null;
             if (args.length > 2)
                 timeout = Long.parseLong(args[2]);
             if (args.length > 3)
-                cypherIn = args[3];
+                cypherIn = Files.readAllLines(Paths.get(args[3]));
             Pirate pirate = new Pirate(N, timeout, hashes, cypherIn);
             pirate.findTreasure(N, timeout);
         } catch (IOException e) {

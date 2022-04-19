@@ -59,10 +59,12 @@ public class Pirate {
         return "" + crackedCypher;
     }
 
-    public void treasureWrapper(int threads, long timeout){
+    public void treasureWrapper(int threads, long timeout) {
         findTreasure(threads, timeout);
-        hintList.sort(new StringIntComparator());
-        System.out.println(crackCypher(cypher, hintList));
+        if (cypher != null) {
+            hintList.sort(new StringIntComparator());
+            System.out.println(crackCypher(cypher, hintList));
+        }
     }
 
     public void findTreasure(int threads, long timeout) {

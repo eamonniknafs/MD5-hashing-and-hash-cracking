@@ -2,13 +2,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
-import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutionException;
@@ -23,9 +20,9 @@ public class Pirate {
     BlockingQueue<Runnable> WorkerQueue;
     TimeUnit timeUnit = TimeUnit.MILLISECONDS;
     ThreadPoolExecutor executor;
-    List<String> cypher;
+    String cypher;
 
-    public Pirate(int threads, long timeout, List<String> hashes, List<String> cypher) {
+    public Pirate(int threads, long timeout, List<String> hashes, String cypher) {
         Dispatcher dispatcher = new Dispatcher(hashes);
         ArrayList<ArrayList<String>> treasureChest = dispatcher.dispatch(threads, timeout, true);
         this.cypher = cypher;
@@ -54,17 +51,18 @@ public class Pirate {
         }
     }
 
-    public static String crackCypher(List<String> cypher, LinkedList<String> hints) {
+    public static String crackCypher(String cypher, LinkedList<String> hints) {
         String crackedCypher = "";
-        for (String cyph : cypher) {
-            for (String hint : hints) {
-                crackedCypher = crackedCypher + cyph.charAt(Integer.parseInt(hint));
-            }
-            if (cypher.size() > 1) {
-                crackedCypher = crackedCypher + "\n";
-            }
+        for (String hint : hints) {
+            crackedCypher += cypher.charAt(Integer.parseInt(hint));
         }
         return "" + crackedCypher;
+    }
+
+    public void treasureWrapper(int threads, long timeout){
+        findTreasure(threads, timeout);
+        hintList.sort(new StringIntComparator());
+        System.out.println(crackCypher(cypher, hintList));
     }
 
     public void findTreasure(int threads, long timeout) {
@@ -87,9 +85,7 @@ public class Pirate {
                             WorkQueue.add(out);
                         } else {
                             String[] split = out.split(";");
-                            for (String value : split) {
-                                hintList.add(value);
-                            }
+                            hintList.add(split[1]);
                         }
                     }
                 } catch (InterruptedException | ExecutionException e) {
@@ -97,16 +93,9 @@ public class Pirate {
                 }
             }
             if (!WorkQueue.isEmpty()) {
-                findTreasure(threads, timeout);
-            }
-            if (!hintList.isEmpty()) {
-                hintList.removeAll(Collections.singleton(null));
-                Set<String> set = new HashSet<>(hintList);
-                hintList.clear();
-                hintList.addAll(set);
+                // System.out.println("\nRECURSE");
                 hintList.sort(new StringIntComparator());
-                System.out.println(crackCypher(cypher, hintList));
-                hintList.clear();
+                findTreasure(threads, timeout);
             }
         } catch (InterruptedException e) {
             System.out.println("\n\nInterrupted\n\n");
@@ -118,15 +107,17 @@ public class Pirate {
             List<String> hashes = Files.readAllLines(Paths.get(args[0]));
             int N = Integer.parseInt(args[1]);
             long timeout = -1;
-            List<String> cypherIn = null;
+            String cypherIn = null;
             if (args.length > 2)
                 timeout = Long.parseLong(args[2]);
             if (args.length > 3)
-                cypherIn = Files.readAllLines(Paths.get(args[3]));
+                cypherIn = new String(Files.readAllBytes(Paths.get(args[3])), "UTF-8");
+            // System.out.println("\n"+hashes);
+            // System.out.println("\n" + cypherIn);
             Pirate pirate = new Pirate(N, timeout, hashes, cypherIn);
-            pirate.findTreasure(N, timeout);
+            pirate.treasureWrapper(N, timeout);
         } catch (IOException e) {
-            System.out.println("Failed reading file");
+            System.out.println("Failed reading input files(s)");
         }
     }
 }

@@ -71,7 +71,11 @@ public class Pirate {
         WorkerFutures = new LinkedList<Future<String>>();
         executor = new ThreadPoolExecutor(threads, threads, 0L, timeUnit, WorkerQueue);
         while (!WorkQueue.isEmpty()) {
-            WorkerFutures.add(executor.submit(new HintUnHash(WorkQueue.poll(), hintList, timeout * 13)));
+            if (cypher != null) {
+                WorkerFutures.add(executor.submit(new HintUnHash(WorkQueue.poll(), hintList, timeout * 13, true)));
+            } else {
+                WorkerFutures.add(executor.submit(new HintUnHash(WorkQueue.poll(), hintList, timeout * 13, false)));
+            }
         }
         executor.shutdown();
         try {

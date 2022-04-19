@@ -1,3 +1,4 @@
+import java.util.HashMap;
 import java.util.concurrent.Callable;
 
 class UnHash implements Callable<String> {
@@ -5,12 +6,21 @@ class UnHash implements Callable<String> {
     long timeout;
     long endTime;
     Boolean print = true;
+    HashMap<Integer, String> hashes;
 
     public UnHash(String hash, long timeout, Boolean print) {
         super();
         this.hash = hash;
         this.timeout = timeout;
         this.print = print;
+    }
+
+    public UnHash(String hash, long timeout, Boolean print, HashMap<Integer, String> hashes) {
+        super();
+        this.hash = hash;
+        this.timeout = timeout;
+        this.print = print;
+        this.hashes = hashes;
     }
 
     @Override
@@ -55,6 +65,29 @@ class UnHash implements Callable<String> {
         while (!found && endTime > System.currentTimeMillis()) {
             try {
                 md5 = Hash.hash(i + "");
+            } catch (Exception e) {
+                return "Failed generating hash" + hash;
+            }
+            if (md5.equals(hash)) {
+                found = true;
+                return i + "";
+            }
+            i++;
+        }
+        return "" + hash;
+    }
+
+    public static String unhash(String hash, long endTime, HashMap<Integer, String> hashes) {
+        Boolean found = false;
+        String md5 = null;
+        int i = 0;
+        while (!found && endTime > System.currentTimeMillis()) {
+            try {
+                if (hashes.containsKey(i)) {
+                    return "" + hashes.get(i);
+                }
+                md5 = Hash.hash(i + "");
+                hashes.put(i, md5);
             } catch (Exception e) {
                 return "Failed generating hash" + hash;
             }
